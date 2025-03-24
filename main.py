@@ -56,6 +56,7 @@ def draw_routes():
         return
     
     directions = gmaps.directions(start, end, mode="driving", alternatives=True)
+    print(directions)
     if not directions:
         messagebox.showerror("Error", "No routes found between the selected locations.")
         return
