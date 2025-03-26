@@ -8,6 +8,7 @@ GOOGLE_API_KEY = "AIzaSyB2Jxq5XFdg6E2ZdBh_-Noeg2hNeUnV8yQ"
 WEATHER_API_KEY = "5780440f22987457c0406c3223f66512"
 
 # Default weights for heuristic function
+# TODO: need to adjust these weights based on user preferences or testing
 DEFAULT_WEIGHTS = {
     "distance": 1,
     "time": 2,
