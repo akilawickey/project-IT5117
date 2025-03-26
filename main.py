@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import webbrowser
-import folium
+import folium # type: ignore
 import requests
 import googlemaps
 import os
