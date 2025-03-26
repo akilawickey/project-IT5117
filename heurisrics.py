@@ -1,4 +1,6 @@
 import requests
+import tkinter as tk
+from tkinter import ttk
 import webbrowser
 
 # API Keys
@@ -7,7 +9,7 @@ WEATHER_API_KEY = "5780440f22987457c0406c3223f66512"
 
 # Weights for heuristic function
 WEIGHTS = {
-    "distance": 1,  # Lower is better
+    "distance": 5,  # Lower is better
     "time": 2,  # Faster routes preferred
     "road_condition": 5,  # Bad roads should be penalized more
     "weather": 3,  # Bad weather penalty
@@ -113,7 +115,41 @@ def view_route_on_google_maps(start, end):
     else:
         print("No routes found.")
 
-# Example usage
-start_location = "Colombo, Sri Lanka"
-end_location = "Kandy, Sri Lanka"
-view_route_on_google_maps(start_location, end_location)
+# Function to handle the button click
+def on_compute_button_click():
+    start_location = start_entry.get()
+    end_location = end_entry.get()
+
+    if not start_location or not end_location:
+        print("Please enter both start and end locations.")
+        return
+
+    view_route_on_google_maps(start_location, end_location)
+
+# Tkinter UI to input start and end locations
+def create_ui():
+    # Create main window
+    root = tk.Tk()
+    root.title("Route Planner")
+
+    # Start location input
+    ttk.Label(root, text="Start Location:").pack(pady=5)
+    global start_entry
+    start_entry = ttk.Entry(root, width=50)
+    start_entry.pack(pady=5)
+
+    # End location input
+    ttk.Label(root, text="End Location:").pack(pady=5)
+    global end_entry
+    end_entry = ttk.Entry(root, width=50)
+    end_entry.pack(pady=5)
+
+    # Compute button
+    compute_button = ttk.Button(root, text="Compute Route", command=on_compute_button_click)
+    compute_button.pack(pady=20)
+
+    # Run the Tkinter UI
+    root.mainloop()
+
+# Run the Tkinter UI
+create_ui()
