@@ -1,8 +1,16 @@
 
 from app.map_visualizer import generate_map
+from app.settings import DEBUG
+
+# Print only if DEBUG is enabled
+def debug_log(msg):
+    if DEBUG:
+        print('[DEBUG]', msg)
+
 from app.heuristics import estimate_weather
 from app.utils import get_latlng
 
+# Main routing logic that builds daily travel chunks
 def compute_route(start, end, waypoints, preferences):
     distance_per_day_km = 100
     max_places_per_day = 2
@@ -52,6 +60,7 @@ def compute_route(start, end, waypoints, preferences):
             route_summary += f"- {stop}\n"
     return route_summary
 
+# Use Overpass API to get nearby hotel names
 def get_hotel_nearby(lat, lng, budget_usd):
     import requests
     lat, lng = round(lat, 3), round(lng, 3)
@@ -64,6 +73,7 @@ node['tourism'='hotel']({{south}},{{west}},{{north}},{{east}});
 out;
 """.replace("{south}", str(south)).replace("{west}", str(west)).replace("{north}", str(north)).replace("{east}", str(east))
     try:
+        debug_log(f"Hotel API query: {query}")
         response = requests.post(overpass_url, data={'data': query})
         data = response.json()
         hotels = data.get('elements', [])
@@ -72,5 +82,7 @@ out;
         best_hotel = hotels[0]
         return {"name": best_hotel.get('tags', {}).get('name', 'Unnamed Hotel')}
     except Exception as e:
+        debug_log(f"Hotel API request failed: {e}")
+        return None
         print("[Overpass Error]", e)
         return None

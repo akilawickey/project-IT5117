@@ -2,3 +2,5 @@ GOOGLE_API_KEY = "AIzaSyB2Jxq5XFdg6E2ZdBh_-Noeg2hNeUnV8yQ"
 WEATHER_API_KEY = "5780440f22987457c0406c3223f66512"
 MAP_FILE = "route_map.html"
 DEFAULT_MAP_CENTER = [7.8731, 80.7718]
+# Debug flag for logging
+DEBUG = False
