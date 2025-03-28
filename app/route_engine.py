@@ -74,6 +74,5 @@ def compute_route(start, end, waypoints, preferences):
     _ = estimate_weather(dummy_route)
     generate_map(start, end, full_route_with_hotels)
     route_summary = 'Route Plan:\n'
-    for i, stop in enumerate(full_route_with_hotels, 1):
-        route_summary += f"{i}. {stop}\n"
+    route_summary += ' -> '.join(full_route_with_hotels)
     return route_summary
