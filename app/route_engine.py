@@ -1,5 +1,7 @@
+
 import requests
 from app.map_visualizer import generate_map
+from app.utils import get_latlng
 from app.heuristics import estimate_weather
 from app.settings import GOOGLE_API_KEY
 
@@ -12,99 +14,76 @@ def get_latlng(location_name):
         return (loc['lat'], loc['lng'])
     return (7.8731, 80.7718)
 
-
 def get_hotel_nearby(lat, lng, budget_usd):
-<<<<<<< HEAD
-#     url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={lat},{lng}&radius=20000&type=lodging&key={GOOGLE_API_KEY}&region=LK"
-=======
-    url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={lat},{lng}&radius=20000&type=lodging&key={GOOGLE_API_KEY}&region=LK"
->>>>>>> fa6b68d556d770484b3426be23206b92e452fbbb
-    response = requests.get(url)
-    data = response.json()
-    print("[DEBUG] Full Google API response:")
-    print(data)
-    if "results" in data:
-        hotels = data["results"]
-        hotels.sort(key=lambda h: h.get("rating", 0), reverse=True)
-        # Filter by price level based on user budget
-        if budget_usd == 0:
-            price_level = 0
-        elif budget_usd <= 50:
-            price_level = 1
-        elif budget_usd <= 100:
-            price_level = 2
-        elif budget_usd <= 150:
-            price_level = 3
-        else:
-            price_level = 4
-
-        # Allow ±1 price level for more options
-        flexible_range = [price_level - 1, price_level, price_level + 1]
-        filtered = [h for h in hotels if h.get('price_level') in flexible_range]
-        print(f"[Debug] Found {len(filtered)} hotels after filtering by price level (flex ±1)")
-        filtered.sort(key=lambda h: h.get('rating', 0), reverse=True)
-        return filtered[0] if filtered else None
-    return None
+    import requests
+    lat, lng = round(lat, 3), round(lng, 3)
+    south, north = lat - 0.05, lat + 0.05
+    west, east = lng - 0.05, lng + 0.05
+    overpass_url = "https://overpass-api.de/api/interpreter"
+    query = f"""
+[out:json];
+node['tourism'='hotel']({{south}},{{west}},{{north}},{{east}});
+out;
+""".replace("{south}", str(south)).replace("{west}", str(west)).replace("{north}", str(north)).replace("{east}", str(east))
+    try:
+        response = requests.post(overpass_url, data={'data': query})
+        data = response.json()
+        print(f"[Overpass Debug] Found {len(data.get('elements', []))} hotels")
+        hotels = data.get('elements', [])
+        if not hotels:
+            return None
+        best_hotel = hotels[0]
+        return {"name": best_hotel.get('tags', {}).get('name', 'Unnamed Hotel')}
+    except Exception as e:
+        print("[Overpass Error]", e)
+        return None
 
 def compute_route(start, end, waypoints, preferences):
     distance_per_day_km = 100
     max_places_per_day = 2
-
     full_path = [start] + [wp.strip() for wp in waypoints if wp.strip()] + [end]
     grouped_routes = []
     current_day = []
-    current_distance = 0
 
     for place in full_path:
         current_day.append(place)
         if len(current_day) == max_places_per_day + 1:
             grouped_routes.append(current_day[:])
             current_day = [place]
-
     if current_day:
         grouped_routes.append(current_day)
 
     full_route_with_hotels = []
+    day_routes = []
+
     for group in grouped_routes:
-        # Always add hotel after last stop of each group
-        if len(group) > 0:
-            last_loc = group[-1]
-            latlng = get_latlng(last_loc)
-            hotel = get_hotel_nearby(latlng[0], latlng[1], preferences.get('budget', 50))
-            if hotel:
-                hotel_name = hotel['name']
-                full_route_with_hotels.append(f"{hotel_name} (Hotel)")
-            else:
-                full_route_with_hotels.append(f"No nearby hotel found near {last_loc}")
-        full_route_with_hotels.extend(group)
-        # Search for hotel only if last location of the day is valid
+        day = []
+        day.extend(group)
         last_loc = group[-1]
-        if last_loc:
-            latlng = get_latlng(last_loc)
-            hotel = get_hotel_nearby(latlng[0], latlng[1], preferences.get('budget', 50))
-            if hotel:
-                hotel_name = hotel['name']
-                full_route_with_hotels.append(f"{hotel_name} (Hotel)")
-            else:
-                full_route_with_hotels.append(f"No nearby hotel found near {last_loc}")
+        latlng = get_latlng(last_loc)
+        hotel = get_hotel_nearby(latlng[0], latlng[1], preferences.get('budget', 50))
+        if hotel:
+            hotel_name = hotel['name']
+            full_route_with_hotels.extend(group)
+            full_route_with_hotels.append(f"{hotel_name} (Hotel)")
+            day.append(f"{hotel_name} (Hotel)")
+        else:
+            full_route_with_hotels.extend(group)
+            full_route_with_hotels.append(f"No nearby hotel found near {last_loc}")
+            day.append(f"No nearby hotel found near {last_loc}")
+        day_routes.append(day)
+
     dummy_route = {
         "legs": [{
             "start_location": {"lat": 7.8731, "lng": 80.7718}
         }]
     }
     _ = estimate_weather(dummy_route)
-    generate_map(start, end, full_route_with_hotels)
-    route_summary = 'Route Plan:\n'
-    route_summary += ' -> '.join(full_route_with_hotels)
-    return route_summary
-    route_summary += ' -> '.join(full_route_with_hotels)
+    generate_map(start, end, full_route_with_hotels, hotel_names=[s for d in day_routes for s in d if '(Hotel)' in s])
 
-def get_hotel_nearby(lat, lng, budget_usd):
-    # Fallback mock data until Google API access is restored
-    # Simulated OpenAPI fallback or static dataset
-    mock_hotels = [
-        {"name": "Mock Inn", "price_level": 1, "rating": 4.1},
-        {"name": "Sunset Lodge", "price_level": 2, "rating": 4.3},
-        {"name": "Palm Garden Hotel", "price_level": 3, "rating": 4.0}
-    ]
-    return sorted(mock_hotels, key=lambda h: h["rating"], reverse=True)[0]
+    route_summary = 'Route Plan by Day:\n'
+    for i, day in enumerate(day_routes, 1):
+        route_summary += f"\nDay {i}:\n"
+        for stop in day:
+            route_summary += f"- {stop}\n"
+    return route_summary

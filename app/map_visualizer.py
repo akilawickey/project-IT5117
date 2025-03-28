@@ -1,32 +1,20 @@
+
 import folium
-import webbrowser
-import os
-import googlemaps
-from app.settings import GOOGLE_API_KEY, MAP_FILE
+from app.settings import DEFAULT_MAP_CENTER, MAP_FILE
+from app.utils import get_latlng
 
-gmaps = googlemaps.Client(key=GOOGLE_API_KEY)
-
-def get_coords(location_name):
-    geocode_result = gmaps.geocode(location_name)
-    if geocode_result:
-        loc = geocode_result[0]['geometry']['location']
-        return [loc['lat'], loc['lng']]
-    return [7.8731, 80.7718]
-
-def generate_map(start, end, waypoints):
-    start_coords = get_coords(start)
-    end_coords = get_coords(end)
-    waypoint_coords = [get_coords(wp) for wp in waypoints if wp.strip()]
-    all_points = [start_coords] + waypoint_coords + [end_coords]
-
-    m = folium.Map(location=start_coords, zoom_start=7)
-    folium.Marker(location=start_coords, popup="Start", icon=folium.Icon(color="green")).add_to(m)
-    for i, wp in enumerate(waypoint_coords):
-        folium.Marker(location=wp, popup=f"Waypoint {i+1}", icon=folium.Icon(color="blue")).add_to(m)
-    folium.Marker(location=end_coords, popup="End", icon=folium.Icon(color="red")).add_to(m)
-    folium.PolyLine(locations=all_points, color="blue", weight=3, opacity=0.7).add_to(m)
-
+def generate_map(start, end, waypoints, hotel_names=None):
+    m = folium.Map(location=DEFAULT_MAP_CENTER, zoom_start=7)
+    for idx, location in enumerate(waypoints):
+        color = 'blue' if hotel_names and location in hotel_names else 'red'
+        folium.Marker(location=get_latlng(location), popup=location, icon=folium.Icon(color=color)).add_to(m)
     m.save(MAP_FILE)
 
+
+import webbrowser
+import os
+
 def open_map():
-    webbrowser.open("file://" + os.path.abspath(MAP_FILE))
+    from app.settings import MAP_FILE
+    map_path = os.path.abspath(MAP_FILE)
+    webbrowser.open(f"file://{map_path}")
