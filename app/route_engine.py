@@ -66,14 +66,6 @@ def compute_route(start, end, waypoints, preferences):
             if hotel:
                 hotel_name = hotel['name']
                 full_route_with_hotels.append(f"{hotel_name} (Hotel)")
-        if len(group) > 1:
-            latlng = get_latlng(group[-1])
-            hotel = get_hotel_nearby(latlng[0], latlng[1], preferences.get("budget", 50))
-            if hotel:
-                hotel_name = hotel["name"]
-                hotel_coords = hotel["geometry"]["location"]
-                full_route_with_hotels.append(f"{hotel_name} (Hotel)")
-
     dummy_route = {
         "legs": [{
             "start_location": {"lat": 7.8731, "lng": 80.7718}
