@@ -1,5 +1,6 @@
+
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
 from app.route_engine import compute_route
 from app.map_visualizer import open_map
 from app.heuristics import view_route_on_google_maps
@@ -28,17 +29,21 @@ class TravelPlannerApp:
         self.end_entry = tk.Entry(self.root, width=40, font=self.custom_font)
         self.end_entry.grid(row=2, column=1)
 
+        tk.Label(self.root, text="Daily Budget (LKR):", font=self.custom_font).grid(row=3, column=0, sticky="w")
+        self.budget_entry = tk.Entry(self.root, width=20, font=self.custom_font)
+        self.budget_entry.grid(row=3, column=1, sticky="w")
+
         self.budget_var = tk.BooleanVar()
         self.places_var = tk.BooleanVar()
 
-        tk.Checkbutton(self.root, text="Low Budget Hotels", variable=self.budget_var, font=self.custom_font).grid(row=3, column=0, columnspan=2, sticky="w")
-        tk.Checkbutton(self.root, text="Maximum Places Covered", variable=self.places_var, font=self.custom_font).grid(row=4, column=0, columnspan=2, sticky="w")
+        tk.Checkbutton(self.root, text="Low Budget Hotels", variable=self.budget_var, font=self.custom_font).grid(row=4, column=0, columnspan=2, sticky="w")
+        tk.Checkbutton(self.root, text="Maximum Places Covered", variable=self.places_var, font=self.custom_font).grid(row=5, column=0, columnspan=2, sticky="w")
 
-        ttk.Button(self.root, text="Compute Route", command=self.compute_itinerary).grid(row=5, column=0, columnspan=2, pady=5)
-        ttk.Button(self.root, text="Open Map", command=open_map).grid(row=6, column=0, columnspan=2, pady=5)
-        ttk.Button(self.root, text="View on Google Maps", command=self.view_google_maps).grid(row=7, column=0, columnspan=2, pady=5)
+        ttk.Button(self.root, text="Compute Route", command=self.compute_itinerary).grid(row=6, column=0, columnspan=2, pady=5)
+        ttk.Button(self.root, text="Open Map", command=open_map).grid(row=7, column=0, columnspan=2, pady=5)
+        ttk.Button(self.root, text="View on Google Maps", command=self.view_google_maps).grid(row=8, column=0, columnspan=2, pady=5)
 
-        tk.Label(self.root, textvariable=self.result_text, wraplength=500, fg="blue", font=self.custom_font).grid(row=8, column=0, columnspan=2)
+        tk.Label(self.root, textvariable=self.result_text, wraplength=500, fg="blue", font=self.custom_font).grid(row=9, column=0, columnspan=2)
 
     def compute_itinerary(self):
         start = self.start_entry.get().strip()
@@ -54,9 +59,17 @@ class TravelPlannerApp:
             self.result_text.set("End location is invalid.")
             return
 
+        try:
+            budget_lkr = float(self.budget_entry.get().strip())
+            budget = budget_lkr / 296  # Convert to USD for API comparison
+        except ValueError:
+            self.result_text.set("Please enter a valid numeric budget.")
+            return
+
         waypoints = self.middle_entry.get().strip().split(",")
         preferences = {
-            "budget": self.budget_var.get(),
+            "budget": budget,
+            "low_budget": self.budget_var.get(),
             "places": self.places_var.get()
         }
 
