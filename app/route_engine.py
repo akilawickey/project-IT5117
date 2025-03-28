@@ -58,6 +58,14 @@ def compute_route(start, end, waypoints, preferences):
     full_route_with_hotels = []
     for group in grouped_routes:
         full_route_with_hotels.extend(group)
+        # Search for hotel only if last location of the day is valid
+        last_loc = group[-1]
+        if last_loc:
+            latlng = get_latlng(last_loc)
+            hotel = get_hotel_nearby(latlng[0], latlng[1], preferences.get('budget', 50))
+            if hotel:
+                hotel_name = hotel['name']
+                full_route_with_hotels.append(f"{hotel_name} (Hotel)")
         if len(group) > 1:
             latlng = get_latlng(group[-1])
             hotel = get_hotel_nearby(latlng[0], latlng[1], preferences.get("budget", 50))
@@ -74,6 +82,6 @@ def compute_route(start, end, waypoints, preferences):
     _ = estimate_weather(dummy_route)
     generate_map(start, end, full_route_with_hotels)
     route_summary = 'Route Plan:\n'
-    for i, stop in enumerate(full_route_with_hotels, 1):
-        route_summary += f"{i}. {stop}\n"
+    route_summary += ' -> '.join(full_route_with_hotels)
     return route_summary
+    route_summary += ' -> '.join(full_route_with_hotels)
