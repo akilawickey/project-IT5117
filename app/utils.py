@@ -21,3 +21,16 @@ def validate_location(location_name):
     except Exception as e:
         print("[Validation Error]", e)
         return False
+
+def get_all_routes(start, end, waypoint_names):
+    gmaps = googlemaps.Client(key=GOOGLE_API_KEY)
+    directions_result = gmaps.directions(
+        origin=start,
+        destination=end,
+        waypoints=waypoint_names,
+        optimize_waypoints=True,
+        alternatives=True,
+        mode="driving",
+        region="LK"
+    )
+    return directions_result

@@ -1,6 +1,7 @@
 
 from app.map_visualizer import generate_map
 from app.settings import DEBUG
+from app.utils import get_all_routes
 
 # Print only if DEBUG is enabled
 def debug_log(msg):
@@ -11,13 +12,44 @@ from app.heuristics import estimate_weather
 from app.utils import get_latlng
 
 # Main routing logic that builds daily travel chunks
-def compute_route(start, end, waypoints, preferences):
+def compute_route(start, end, waypoints, preferences, user_days=None):
     distance_per_day_km = 100
     max_places_per_day = 2
-    full_path = [start] + [wp.strip() for wp in waypoints if wp.strip()] + [end]
+    all_routes = []
+    given_waypoints = [wp.strip() for wp in waypoints if wp.strip()]
+    all_routes = get_all_routes(start, end, given_waypoints)
+    if not all_routes:
+        return "No routes found. Please check your locations."
+    debug_log(f"All routes found: {len(all_routes)}")
+    # Sort routes by distance
+    all_routes.sort(key=lambda x: x['legs'][0]['distance']['value'])
+    # Select the best route (shortest distance)
+    best_route = all_routes[0]
+    debug_log(f"Best route found with distance: {best_route['legs'][0]['distance']['text']}")
+    # Extract waypoints from the best route
+    waypoint_order = best_route.get("waypoint_order", [])
+    debug_log(f"Optimized waypoint order (by index): {waypoint_order}")
+    ordered_waypoints = [given_waypoints[i] for i in waypoint_order]
+    debug_log(f"Ordered waypoints: {ordered_waypoints}")
+    # Add start and end to the waypoints
+    full_path = [start] + [wp for wp in ordered_waypoints] + [end]
+    debug_log(f"Full path: {full_path}")
+    # Group waypoints into daily travel chunks
+    # based on distance and max places per day
+    # Calculate the distance of the full path
+    total_distance = 0
+    for i in range(len(full_path) - 1):
+        leg = get_all_routes(full_path[i], full_path[i + 1], [])
+        if leg:
+            total_distance += leg[0]['legs'][0]['distance']['value']
+    debug_log(f"Total distance: {total_distance} meters")
+    # Calculate the number of days needed based on distance
+    min_num_days_needed = total_distance // (distance_per_day_km * 1000) + 1
+    debug_log(f"Minimum Number of days needed: {min_num_days_needed}")
     grouped_routes = []
+    num_days = 0
+    num_days = 0
     current_day = []
-    current_distance = 0
     for place in full_path:
         current_day.append(place)
         if len(current_day) == max_places_per_day + 1:
@@ -25,7 +57,21 @@ def compute_route(start, end, waypoints, preferences):
             current_day = [place]
     if current_day:
         grouped_routes.append(current_day)
-
+    num_days = len(grouped_routes)
+    debug_log(f"Number of days calculated: {num_days}")
+    # Check if user_days is provided and validate against min_num_days_needed
+    # and num_days for comfort
+    if num_days < min_num_days_needed:
+        num_days = min_num_days_needed # At least minimum days needed
+    debug_log(f"Adjusted number of days for comfort: {num_days}")
+    if user_days is not None:
+        if user_days < min_num_days_needed:
+            return f"Trip too short! You need at least {min_num_days_needed} days to complete this itinerary."
+        elif user_days < num_days:
+            return f"Trip too short! You need at least {num_days} days to complete this itinerary. Consider extending your trip with more days or reduce the number of places you need to to visit."
+        elif user_days > num_days:
+            extra = user_days - num_days
+            print(f"You can visit {extra} more place(s) in your {user_days}-day trip.")
     full_route_with_hotels = []
     day_routes = []
     for group in grouped_routes:
@@ -45,13 +91,9 @@ def compute_route(start, end, waypoints, preferences):
             day.append(f"No nearby hotel found near {last_loc}")
 
         day_routes.append(day)
+        # Estimate weather for the first leg of the route per each day
+        #bad_weather_heuristics = estimate_weather(day)
 
-    dummy_route = {
-        "legs": [{
-            "start_location": {"lat": 7.8731, "lng": 80.7718}
-        }]
-    }
-    _ = estimate_weather(dummy_route)
     generate_map(start, end, full_route_with_hotels, hotel_names=[s for d in day_routes for s in d if '(Hotel)' in s])
     route_summary = 'Route Plan by Day:\n'
     for i, day in enumerate(day_routes, 1):

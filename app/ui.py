@@ -29,7 +29,7 @@ class TravelPlannerApp:
         self.end_entry.grid(row=1, column=1, padx=5, pady=5)
 
         tk.Label(trip_frame, text="Add a Stop:", font=self.custom_font).grid(row=2, column=0, sticky="e", padx=5, pady=5)
-        self.stop_entry = tk.Entry(trip_frame, width=30, font=self.custom_font)
+        self.stop_entry = tk.Entry(trip_frame, width=40, font=self.custom_font)
         self.stop_entry.grid(row=2, column=1, sticky="w", padx=5, pady=5)
 
         self.add_button = tk.Button(trip_frame, text="Add Waypoint", command=self.add_waypoint, font=self.custom_font)
@@ -48,6 +48,11 @@ class TravelPlannerApp:
         self.budget_entry = tk.Entry(trip_frame, width=20, font=self.custom_font)
         self.budget_entry.grid(row=5, column=1, sticky="w", padx=5, pady=5)
 
+        # Number of Days input
+        tk.Label(trip_frame, text="Number of Days:", font=self.custom_font).grid(row=6, column=0, sticky="e", padx=5, pady=5)
+        self.days_entry = tk.Entry(trip_frame, width=20, font=self.custom_font)
+        self.days_entry.grid(row=6, column=1, sticky="w", padx=5, pady=5)
+
         # Button Row
         button_frame = tk.Frame(root)
         button_frame.pack(pady=10)
@@ -58,7 +63,7 @@ class TravelPlannerApp:
         self.export_button = tk.Button(button_frame, text="Export Itinerary", command=self.export_itinerary, font=self.custom_font)
         self.export_button.grid(row=0, column=1, padx=5)
 
-        self.map_button = tk.Button(button_frame, text="Open Quick Route", command=open_map, font=self.custom_font)
+        self.map_button = tk.Button(button_frame, text="Open Map View", command=open_map, font=self.custom_font)
         self.map_button.grid(row=0, column=2, padx=5)
 
         self.google_button = tk.Button(button_frame, text="Open in Google Maps", command=self.view_on_google_maps, font=self.custom_font)
@@ -110,7 +115,20 @@ class TravelPlannerApp:
             budget_lkr = 30000
         preferences = {'budget': budget_lkr / 296}
 
-        result = compute_route(start, end, self.waypoints, preferences)
+        # Get user-defined number of days
+        try:
+            user_days = int(self.days_entry.get())
+        except ValueError:
+            user_days = None
+            print("Invalid day input; continuing without validation.")
+        result = compute_route(start, end, self.waypoints, preferences, user_days=user_days)
+        # Read user-provided number of days
+        try:
+            user_days = int(self.days_entry.get()) if self.days_entry.get().strip() else None
+        except ValueError:
+            self.result_text_widget.insert(tk.END, "Invalid number of days\n")
+            return
+        result = compute_route(start, end, self.waypoints, preferences, user_days=user_days)
         self.result_text_widget.delete("1.0", tk.END)
         self.result_text_widget.insert(tk.END, result)
         self.result_text_widget.see(tk.END)
