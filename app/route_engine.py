@@ -14,7 +14,11 @@ def get_latlng(location_name):
 
 
 def get_hotel_nearby(lat, lng, budget_usd):
+<<<<<<< HEAD
 #     url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={lat},{lng}&radius=20000&type=lodging&key={GOOGLE_API_KEY}&region=LK"
+=======
+    url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={lat},{lng}&radius=20000&type=lodging&key={GOOGLE_API_KEY}&region=LK"
+>>>>>>> fa6b68d556d770484b3426be23206b92e452fbbb
     response = requests.get(url)
     data = response.json()
     print("[DEBUG] Full Google API response:")
