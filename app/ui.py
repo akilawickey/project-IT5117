@@ -9,56 +9,67 @@ class TravelPlannerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("AI Travel Planner")
-        self.root.geometry("820x720")
+        self.root.geometry("800x700")
         self.root.resizable(True, True)
         self.custom_font = ("Segoe UI", 11)
 
-        tk.Label(root, text="AI Travel Planner", font=("Segoe UI", 16, "bold")).grid(row=0, column=0, columnspan=3, pady=10)
+        title_label = tk.Label(root, text="AI Travel Planner", font=("Segoe UI", 16, "bold"))
+        title_label.pack(pady=10)
 
-        tk.Label(root, text="Start Location:", font=self.custom_font).grid(row=1, column=0, sticky="e")
-        self.start_entry = tk.Entry(root, width=40, font=self.custom_font)
-        self.start_entry.grid(row=1, column=1, padx=5, pady=5)
+        # Trip Preferences section
+        trip_frame = tk.LabelFrame(root, text="Trip Preferences", padx=10, pady=10, font=("Segoe UI", 12, "bold"))
+        trip_frame.pack(padx=20, pady=5, fill="x")
 
-        tk.Label(root, text="End Location:", font=self.custom_font).grid(row=2, column=0, sticky="e")
-        self.end_entry = tk.Entry(root, width=40, font=self.custom_font)
-        self.end_entry.grid(row=2, column=1, padx=5, pady=5)
+        tk.Label(trip_frame, text="Start Location:", font=self.custom_font).grid(row=0, column=0, sticky="e", padx=5, pady=5)
+        self.start_entry = tk.Entry(trip_frame, width=40, font=self.custom_font)
+        self.start_entry.grid(row=0, column=1, padx=5, pady=5)
 
-        tk.Label(root, text="Add a Stop:", font=self.custom_font).grid(row=3, column=0, sticky="e")
-        self.stop_entry = tk.Entry(root, width=30, font=self.custom_font)
-        self.stop_entry.grid(row=3, column=1, padx=5, pady=5, sticky="w")
+        tk.Label(trip_frame, text="End Location:", font=self.custom_font).grid(row=1, column=0, sticky="e", padx=5, pady=5)
+        self.end_entry = tk.Entry(trip_frame, width=40, font=self.custom_font)
+        self.end_entry.grid(row=1, column=1, padx=5, pady=5)
 
-        self.add_button = tk.Button(root, text="Add Waypoint", command=self.add_waypoint, font=self.custom_font)
-        self.add_button.grid(row=3, column=2, padx=5)
+        tk.Label(trip_frame, text="Add a Stop:", font=self.custom_font).grid(row=2, column=0, sticky="e", padx=5, pady=5)
+        self.stop_entry = tk.Entry(trip_frame, width=30, font=self.custom_font)
+        self.stop_entry.grid(row=2, column=1, sticky="w", padx=5, pady=5)
 
-        tk.Label(root, text="Hint: Add one by one by using 'Add Waypoint' Button", font=("Segoe UI", 9, "italic")).grid(row=4, column=1, sticky="w", padx=5)
+        self.add_button = tk.Button(trip_frame, text="Add Waypoint", command=self.add_waypoint, font=self.custom_font)
+        self.add_button.grid(row=2, column=2, padx=5, pady=5)
 
-        tk.Label(root, text="Places I wanted to go:", font=self.custom_font).grid(row=5, column=0, sticky="ne", padx=5)
-        self.waypoints_display = tk.Text(root, height=7, width=45, font=self.custom_font, state="disabled")
-        self.waypoints_display.grid(row=5, column=1, padx=5, pady=5)
+        tk.Label(trip_frame, text="Hint: Add one by one by using 'Add Waypoint' Button", font=("Segoe UI", 9, "italic")).grid(row=3, column=1, columnspan=2, sticky="w")
 
-        self.clear_button = tk.Button(root, text="Clear", command=self.clear_waypoints, font=self.custom_font)
-        self.clear_button.grid(row=5, column=2, sticky="n", padx=5)
+        tk.Label(trip_frame, text="Places I wanted to go:", font=self.custom_font).grid(row=4, column=0, sticky="ne", padx=5, pady=5)
+        self.waypoints_display = tk.Text(trip_frame, height=5, width=45, font=self.custom_font, state="disabled", relief="sunken", bd=1)
+        self.waypoints_display.grid(row=4, column=1, padx=5, pady=5)
 
-        tk.Label(root, text="Budget (LKR/day):", font=self.custom_font).grid(row=6, column=0, sticky="e")
-        self.budget_entry = tk.Entry(root, width=20, font=self.custom_font)
-        self.budget_entry.grid(row=6, column=1, padx=5, pady=5, sticky="w")
+        self.clear_button = tk.Button(trip_frame, text="Clear", command=self.clear_waypoints, font=self.custom_font)
+        self.clear_button.grid(row=4, column=2, sticky="n", padx=5)
 
-        # Bottom row of buttons
-        self.compute_button = tk.Button(root, text="Compute Itinerary", command=self.compute_itinerary, font=self.custom_font)
-        self.compute_button.grid(row=7, column=0, pady=10, padx=5)
+        tk.Label(trip_frame, text="Budget (LKR/day):", font=self.custom_font).grid(row=5, column=0, sticky="e", padx=5, pady=5)
+        self.budget_entry = tk.Entry(trip_frame, width=20, font=self.custom_font)
+        self.budget_entry.grid(row=5, column=1, sticky="w", padx=5, pady=5)
 
-        self.export_button = tk.Button(root, text="Export Itinerary", command=self.export_itinerary, font=self.custom_font)
-        self.export_button.grid(row=7, column=1, pady=10, padx=5, sticky="w")
+        # Button Row
+        button_frame = tk.Frame(root)
+        button_frame.pack(pady=10)
 
-        self.map_button = tk.Button(root, text="Open Quick Route", command=open_map, font=self.custom_font)
-        self.map_button.grid(row=7, column=1, pady=10, padx=5, sticky="e")
+        self.compute_button = tk.Button(button_frame, text="Compute Itinerary", command=self.compute_itinerary, font=self.custom_font)
+        self.compute_button.grid(row=0, column=0, padx=5)
 
-        self.google_button = tk.Button(root, text="Open in Google Maps", command=self.view_on_google_maps, font=self.custom_font)
-        self.google_button.grid(row=7, column=2, pady=10)
+        self.export_button = tk.Button(button_frame, text="Export Itinerary", command=self.export_itinerary, font=self.custom_font)
+        self.export_button.grid(row=0, column=1, padx=5)
 
-        # Scrollable itinerary
-        self.result_text_widget = scrolledtext.ScrolledText(root, wrap=tk.WORD, width=95, height=20, font=("Segoe UI", 10))
-        self.result_text_widget.grid(row=8, column=0, columnspan=3, padx=10, pady=10)
+        self.map_button = tk.Button(button_frame, text="Open Quick Route", command=open_map, font=self.custom_font)
+        self.map_button.grid(row=0, column=2, padx=5)
+
+        self.google_button = tk.Button(button_frame, text="Open in Google Maps", command=self.view_on_google_maps, font=self.custom_font)
+        self.google_button.grid(row=0, column=3, padx=5)
+
+        # Output Section
+        output_frame = tk.LabelFrame(root, text="Itinerary", font=("Segoe UI", 12, "bold"))
+        output_frame.pack(padx=20, pady=10, fill="both", expand=True)
+
+        self.result_text_widget = scrolledtext.ScrolledText(output_frame, wrap=tk.WORD, width=90, height=20, font=("Segoe UI", 10))
+        self.result_text_widget.pack(padx=10, pady=10, fill="both", expand=True)
 
         self.waypoints = []
 
@@ -109,7 +120,6 @@ class TravelPlannerApp:
         summary = self.result_text_widget.get("1.0", tk.END)
         with open("itinerary_export.txt", "w", encoding="utf-8") as f:
             f.write(summary)
-        print("Itinerary exported to itinerary_export.txt")
 
     def view_on_google_maps(self):
         import webbrowser
