@@ -14,9 +14,11 @@ def get_latlng(location_name):
 
 
 def get_hotel_nearby(lat, lng, budget_usd):
-    url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={lat},{lng}&radius=5000&type=lodging&key={GOOGLE_API_KEY}&region=LK"
+#     url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={lat},{lng}&radius=20000&type=lodging&key={GOOGLE_API_KEY}&region=LK"
     response = requests.get(url)
     data = response.json()
+    print("[DEBUG] Full Google API response:")
+    print(data)
     if "results" in data:
         hotels = data["results"]
         hotels.sort(key=lambda h: h.get("rating", 0), reverse=True)
@@ -32,7 +34,10 @@ def get_hotel_nearby(lat, lng, budget_usd):
         else:
             price_level = 4
 
-        filtered = [h for h in hotels if h.get('price_level') is not None and h['price_level'] <= price_level]
+        # Allow ±1 price level for more options
+        flexible_range = [price_level - 1, price_level, price_level + 1]
+        filtered = [h for h in hotels if h.get('price_level') in flexible_range]
+        print(f"[Debug] Found {len(filtered)} hotels after filtering by price level (flex ±1)")
         filtered.sort(key=lambda h: h.get('rating', 0), reverse=True)
         return filtered[0] if filtered else None
     return None
@@ -89,3 +94,13 @@ def compute_route(start, end, waypoints, preferences):
     route_summary += ' -> '.join(full_route_with_hotels)
     return route_summary
     route_summary += ' -> '.join(full_route_with_hotels)
+
+def get_hotel_nearby(lat, lng, budget_usd):
+    # Fallback mock data until Google API access is restored
+    # Simulated OpenAPI fallback or static dataset
+    mock_hotels = [
+        {"name": "Mock Inn", "price_level": 1, "rating": 4.1},
+        {"name": "Sunset Lodge", "price_level": 2, "rating": 4.3},
+        {"name": "Palm Garden Hotel", "price_level": 3, "rating": 4.0}
+    ]
+    return sorted(mock_hotels, key=lambda h: h["rating"], reverse=True)[0]
