@@ -57,6 +57,16 @@ def compute_route(start, end, waypoints, preferences):
 
     full_route_with_hotels = []
     for group in grouped_routes:
+        # Always add hotel after last stop of each group
+        if len(group) > 0:
+            last_loc = group[-1]
+            latlng = get_latlng(last_loc)
+            hotel = get_hotel_nearby(latlng[0], latlng[1], preferences.get('budget', 50))
+            if hotel:
+                hotel_name = hotel['name']
+                full_route_with_hotels.append(f"{hotel_name} (Hotel)")
+            else:
+                full_route_with_hotels.append(f"No nearby hotel found near {last_loc}")
         full_route_with_hotels.extend(group)
         # Search for hotel only if last location of the day is valid
         last_loc = group[-1]
@@ -66,6 +76,8 @@ def compute_route(start, end, waypoints, preferences):
             if hotel:
                 hotel_name = hotel['name']
                 full_route_with_hotels.append(f"{hotel_name} (Hotel)")
+            else:
+                full_route_with_hotels.append(f"No nearby hotel found near {last_loc}")
     dummy_route = {
         "legs": [{
             "start_location": {"lat": 7.8731, "lng": 80.7718}
