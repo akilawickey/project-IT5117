@@ -67,6 +67,10 @@ class TravelPlannerApp:
             return
 
         waypoints = self.middle_entry.get().strip().split(",")
+        for wp in waypoints:
+            if wp.strip() and not validate_location(wp.strip()):
+                self.result_text.set(f'Invalid waypoint: {wp.strip()}')
+                return
         preferences = {
             "budget": budget,
             "low_budget": self.budget_var.get(),
