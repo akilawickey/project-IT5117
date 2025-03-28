@@ -9,6 +9,7 @@ class TravelPlannerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("AI Travel Planner")
+        # TODO: Need to fix the window size issue in mac.
         self.root.geometry("800x700")
         self.root.resizable(True, True)
         self.custom_font = ("Segoe UI", 11)

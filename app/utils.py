@@ -1,6 +1,11 @@
 
 from app.settings import GOOGLE_API_KEY
+from app.settings import DEBUG
 import googlemaps
+
+def debug_log(msg):
+    if DEBUG:
+        print('[DEBUG]', msg)
 
 def get_latlng(location_name):
     gmaps = googlemaps.Client(key=GOOGLE_API_KEY)

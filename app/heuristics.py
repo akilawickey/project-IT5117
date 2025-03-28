@@ -1,14 +1,16 @@
 import requests
-# import webbrowser
 from app.settings import DEBUG
 from app.settings import GOOGLE_API_KEY, WEATHER_API_KEY
 
 # Print only if DEBUG is enabled
+# TODO: Remove the debug and use the one from utils package
 def debug_log(msg):
     if DEBUG:
         print('[DEBUG]', msg)
 
 # Weights for heuristic function
+# TODO: Add the weights as constants for better readability and maintainability
+# TODO: Us the settings file
 WEIGHTS = {
     "distance": 0.5,  # Lower is better
     "time": 0.2,  # Faster routes preferred
@@ -29,6 +31,8 @@ def estimate_road_condition(route):
             total_steps += 1
     return bad_roads / total_steps if total_steps else 0  # Normalize
 
+# TODO: move to utils package and use the python library for weather
+# TODO: Check for utils for reference on google map api.
 def estimate_weather(route):
     """Check weather impact on the route"""
     start_lat, start_lng = route["legs"][0]["start_location"].values()
@@ -44,6 +48,8 @@ def estimate_weather(route):
             return 0.5  # Minor penalty
     return 0  # No impact if clear
 
+# TODO: move to utils package and use the python library for google elevation
+# TODO: Check for utils for reference on google map api.
 def estimate_elevation(route):
     """Estimate elevation difficulty from Google Elevation API"""
     locations = "|".join(f"{step['start_location']['lat']},{step['start_location']['lng']}" for leg in route["legs"] for step in leg["steps"])
@@ -59,7 +65,7 @@ def estimate_elevation(route):
     total_elevation = sum(elevation_changes)
     return total_elevation / len(elevation_changes)  # Average elevation change
 
-
+#TODO: If this is not used lets remove it.
 def generate_route_url(start, end, best_route):
     waypoints = []
     for leg in best_route["legs"]:
@@ -92,6 +98,8 @@ def get_route_data(routes):
         weather_impact = estimate_weather(route)
         elevation_penalty = estimate_elevation(route)
 
+        # TODO: Current hueristic value is above beyond 1. Ideally it should be less than 0
+        # TODO: It provide more probabilitic and statistical value to the route selection.
         # Compute heuristic function
         heuristic_score = (
             WEIGHTS["distance"] * distance +

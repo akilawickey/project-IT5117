@@ -4,6 +4,7 @@ from app.settings import DEBUG
 from app.utils import get_all_routes
 
 # Print only if DEBUG is enabled
+# TODO: Remove the debug and use the one from utils package
 def debug_log(msg):
     if DEBUG:
         print('[DEBUG]', msg)
@@ -12,6 +13,7 @@ from app.heuristics import estimate_weather, get_route_data
 from app.utils import get_latlng
 
 # Main routing logic that builds daily travel chunks
+# TODO: Refactor to use a more modular approach for better readability and maintainability 
 def compute_route(start, end, waypoints, preferences, user_days=None):
     distance_per_day_km = 100
     max_places_per_day = 2
@@ -104,6 +106,8 @@ def compute_route(start, end, waypoints, preferences, user_days=None):
     return route_summary
 
 # Use Overpass API to get nearby hotel names
+# TODO: Handle API errors and improve hotel selection logic
+# TODO: Need to use google API to get hotel details.
 def get_hotel_nearby(lat, lng, budget_usd):
     import requests
     lat, lng = round(lat, 3), round(lng, 3)

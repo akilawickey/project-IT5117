@@ -5,6 +5,7 @@ import webbrowser
 from app.settings import DEFAULT_MAP_CENTER, MAP_FILE
 from app.utils import get_latlng
 
+# TODO: Folium map is straight lines we need to correct it.
 def generate_map(start, end, waypoints, hotel_names=None):
     m = folium.Map(location=DEFAULT_MAP_CENTER, zoom_start=7)
     coordinates = []
