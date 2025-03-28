@@ -37,6 +37,8 @@ class TravelPlannerApp:
         self.map_button.grid(row=4, column=1, pady=10, sticky="e")
 
         self.export_button = tk.Button(root, text="Export Itinerary", command=self.export_itinerary, font=self.custom_font)
+        self.google_button = tk.Button(root, text="Open in Google Maps", command=self.view_on_google_maps, font=self.custom_font)
+        self.google_button.grid(row=6, column=1, pady=5, sticky="e")
         self.export_button.grid(row=5, column=1, pady=5, sticky="w")
 
         self.result_text = tk.StringVar()
@@ -68,9 +70,35 @@ class TravelPlannerApp:
 
         result = compute_route(start, end, waypoints, preferences)
         self.result_text.set(result)
+        self.last_route = result
 
     def export_itinerary(self):
         summary = self.result_text.get()
         with open("itinerary_export.txt", "w", encoding="utf-8") as f:
             f.write(summary)
         print("Itinerary exported to itinerary_export.txt")
+
+    def view_on_google_maps(self):
+        import webbrowser
+        if not hasattr(self, "last_route") or not self.last_route:
+            print("No route to show. Please compute itinerary first.")
+            return
+        lines = self.last_route.split("\n")
+        route_points = []
+        for line in lines:
+            if line.startswith("- "):
+                point = line[2:].strip()
+                if " (Hotel)" in point:
+                    point = point.replace(" (Hotel)", "")
+                if "No nearby hotel" not in point:
+                    route_points.append(point.replace(" ", "+"))
+        if len(route_points) < 2:
+            print("Not enough route points to open Google Maps.")
+            return
+        origin = route_points[0]
+        destination = route_points[-1]
+        waypoints = route_points[1:-1]
+        waypoints_param = "%7C".join(waypoints)
+        base_url = "https://www.google.com/maps/dir/?api=1"
+        url = f"{base_url}&origin={origin}&destination={destination}&waypoints={waypoints_param}"
+        webbrowser.open(url)
