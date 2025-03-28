@@ -8,7 +8,7 @@ def debug_log(msg):
     if DEBUG:
         print('[DEBUG]', msg)
 
-from app.heuristics import estimate_weather
+from app.heuristics import estimate_weather, get_route_data
 from app.utils import get_latlng
 
 # Main routing logic that builds daily travel chunks
@@ -24,7 +24,8 @@ def compute_route(start, end, waypoints, preferences, user_days=None):
     # Sort routes by distance
     all_routes.sort(key=lambda x: x['legs'][0]['distance']['value'])
     # Select the best route (shortest distance)
-    best_route = all_routes[0]
+    # best_route = all_routes[0]
+    best_route = get_route_data(all_routes)
     debug_log(f"Best route found with distance: {best_route['legs'][0]['distance']['text']}")
     # Extract waypoints from the best route
     waypoint_order = best_route.get("waypoint_order", [])

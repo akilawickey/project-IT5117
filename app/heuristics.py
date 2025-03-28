@@ -1,14 +1,20 @@
 import requests
-import webbrowser
+# import webbrowser
+from app.settings import DEBUG
 from app.settings import GOOGLE_API_KEY, WEATHER_API_KEY
+
+# Print only if DEBUG is enabled
+def debug_log(msg):
+    if DEBUG:
+        print('[DEBUG]', msg)
 
 # Weights for heuristic function
 WEIGHTS = {
-    "distance": 5,  # Lower is better
-    "time": 2,  # Faster routes preferred
-    "road_condition": 5,  # Bad roads should be penalized more
-    "weather": 3,  # Bad weather penalty
-    "elevation": 4  # Hilly areas penalized more
+    "distance": 0.5,  # Lower is better
+    "time": 0.2,  # Faster routes preferred
+    "road_condition": 0.5,  # Bad roads should be penalized more
+    "weather": 0.3,  # Bad weather penalty
+    "elevation": 0.5  # Hilly areas penalized more
 }
 
 def estimate_road_condition(route):
@@ -67,17 +73,19 @@ def generate_route_url(start, end, best_route):
     route_url = f"https://www.google.com/maps/dir/?api=1&origin={start}&destination={end}&waypoints={waypoints_str}&key={GOOGLE_API_KEY}"
     return route_url
 
-def get_route_data(start, end):
-    url = f"https://maps.googleapis.com/maps/api/directions/json?origin={start}&destination={end}&alternatives=true&mode=driving&key={GOOGLE_API_KEY}"
-    response = requests.get(url)
-    data = response.json()
-
-    if data["status"] != "OK":
-        print(f"Error: {data['status']}")
+def get_route_data(routes):
+    if not routes:
+        print("No routes found.")
         return None
-
-    routes = []
-    for route in data["routes"]:
+    if len(routes) == 1:
+        print("Only one route found, using it.")
+        return routes[0]
+    
+    scored_routes = []  # Create a separate list for scored routes
+    for route in routes:
+        if not route or not route.get("legs"):  # Check if "legs" exists
+            print("Invalid route data, skipping.")
+            continue
         distance = route["legs"][0]["distance"]["value"] / 1000  # Convert to km
         duration = route["legs"][0]["duration"]["value"] / 60  # Convert to minutes
         road_condition = estimate_road_condition(route)  
@@ -92,21 +100,21 @@ def get_route_data(start, end):
             WEIGHTS["weather"] * weather_impact +
             WEIGHTS["elevation"] * elevation_penalty
         )
-
-        routes.append((route, heuristic_score))
+        scored_routes.append((route, heuristic_score))  # Append to scored_routes
+        debug_log(f"Route: {route['summary']}, Heuristic Score: {heuristic_score}")
 
     # Select the best route (lower heuristic is better)
-    routes.sort(key=lambda x: x[1])
-    return routes[0][0]  # Return best route
+    scored_routes.sort(key=lambda x: x[1])
+    return scored_routes[0][0] if scored_routes else None  # Return best route
 
 
 
-def view_route_on_google_maps(start, end):
-    routes = get_route_data(start, end)
-    if routes:
-        best_route = routes[0]
-        route_url = generate_route_url(start, end, best_route)
-        print(f"Opening best route on Google Maps: {route_url}")
-        webbrowser.open(route_url)
-    else:
-        print("No routes found.")
+# def view_route_on_google_maps(start, end):
+#     routes = get_route_data(start, end)
+#     if routes:
+#         best_route = routes[0]
+#         route_url = generate_route_url(start, end, best_route)
+#         print(f"Opening best route on Google Maps: {route_url}")
+#         webbrowser.open(route_url)
+#     else:
+#         print("No routes found.")
