@@ -4,3 +4,10 @@ MAP_FILE = "route_map.html"
 DEFAULT_MAP_CENTER = [7.8731, 80.7718]
 # Debug flag for logging
 DEBUG = True
+
+# Heuristic weight constants
+WEIGHT_DISTANCE = 0.5
+WEIGHT_TIME = 0.2
+WEIGHT_ROAD_CONDITION = 0.5
+WEIGHT_WEATHER = 0.3
+WEIGHT_ELEVATION = 0.5
