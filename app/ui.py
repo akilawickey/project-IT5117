@@ -1,4 +1,3 @@
-
 import tkinter as tk
 from tkinter import messagebox, scrolledtext
 from app.route_engine import compute_route
@@ -10,7 +9,7 @@ class TravelPlannerApp:
         self.root = root
         self.root.title("AI Travel Planner")
         # TODO: Need to fix the window size issue in mac.
-        self.root.geometry("800x700")
+        self.root.geometry("900x800")
         self.root.resizable(True, True)
         self.custom_font = ("Segoe UI", 11)
 
@@ -31,7 +30,7 @@ class TravelPlannerApp:
 
         tk.Label(trip_frame, text="Add a Stop:", font=self.custom_font).grid(row=2, column=0, sticky="e", padx=5, pady=5)
         self.stop_entry = tk.Entry(trip_frame, width=40, font=self.custom_font)
-        self.stop_entry.grid(row=2, column=1, sticky="w", padx=5, pady=5)
+        self.stop_entry.grid(row=2, column=1, sticky="w", padx=25, pady=5)
 
         self.add_button = tk.Button(trip_frame, text="Add Waypoint", command=self.add_waypoint, font=self.custom_font)
         self.add_button.grid(row=2, column=2, padx=5, pady=5)

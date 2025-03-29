@@ -1,23 +1,14 @@
 import requests
+from app.utils import debug_log
 from app.settings import DEBUG
 from app.settings import GOOGLE_API_KEY, WEATHER_API_KEY
-
-# Print only if DEBUG is enabled
-# TODO: Remove the debug and use the one from utils package
-def debug_log(msg):
-    if DEBUG:
-        print('[DEBUG]', msg)
-
-# Weights for heuristic function
-# TODO: Add the weights as constants for better readability and maintainability
-# TODO: Us the settings file
-WEIGHTS = {
-    "distance": 0.5,  # Lower is better
-    "time": 0.2,  # Faster routes preferred
-    "road_condition": 0.5,  # Bad roads should be penalized more
-    "weather": 0.3,  # Bad weather penalty
-    "elevation": 0.5  # Hilly areas penalized more
-}
+from app.settings import (
+    WEIGHT_DISTANCE,
+    WEIGHT_TIME,
+    WEIGHT_ROAD_CONDITION,
+    WEIGHT_WEATHER,
+    WEIGHT_ELEVATION
+)
 
 def estimate_road_condition(route):
     """Estimate road quality based on traffic and road types"""
@@ -98,15 +89,13 @@ def get_route_data(routes):
         weather_impact = estimate_weather(route)
         elevation_penalty = estimate_elevation(route)
 
-        # TODO: Current hueristic value is above beyond 1. Ideally it should be less than 0
-        # TODO: It provide more probabilitic and statistical value to the route selection.
         # Compute heuristic function
         heuristic_score = (
-            WEIGHTS["distance"] * distance +
-            WEIGHTS["time"] * duration +
-            WEIGHTS["road_condition"] * road_condition +
-            WEIGHTS["weather"] * weather_impact +
-            WEIGHTS["elevation"] * elevation_penalty
+            WEIGHT_DISTANCE * distance +
+            WEIGHT_TIME * duration +
+            WEIGHT_ROAD_CONDITION * road_condition +
+            WEIGHT_WEATHER * weather_impact +
+            WEIGHT_ELEVATION * elevation_penalty
         )
         scored_routes.append((route, heuristic_score))  # Append to scored_routes
         debug_log(f"Route: {route['summary']}, Heuristic Score: {heuristic_score}")
