@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox, scrolledtext
 from app.route_engine import compute_route
 from app.map_visualizer import open_map
+# from app.map_visualizer import view_on_google_maps
 from app.utils import validate_location
 
 class TravelPlannerApp:

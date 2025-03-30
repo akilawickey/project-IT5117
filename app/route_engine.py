@@ -97,7 +97,7 @@ def compute_route(start, end, waypoints, preferences, user_days=None):
         # Estimate weather for the first leg of the route per each day
         #bad_weather_heuristics = estimate_weather(day)
 
-    generate_map(start, end, full_route_with_hotels, hotel_names=[s for d in day_routes for s in d if '(Hotel)' in s])
+    generate_map(start, end, best_route, hotel_names=[s for d in day_routes for s in d if '(Hotel)' in s])
     route_summary = 'Route Plan by Day:\n'
     for i, day in enumerate(day_routes, 1):
         route_summary += f"\nDay {i}:\n"

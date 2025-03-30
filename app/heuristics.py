@@ -1,6 +1,5 @@
 import requests
 from app.utils import debug_log
-from app.settings import DEBUG
 from app.settings import GOOGLE_API_KEY, WEATHER_API_KEY
 from app.settings import (
     WEIGHT_DISTANCE,
