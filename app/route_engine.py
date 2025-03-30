@@ -2,6 +2,7 @@
 from app.map_visualizer import generate_map
 from app.settings import DEBUG
 from app.utils import get_all_routes
+from app.map_visualizer import generate_google_maps
 
 # Print only if DEBUG is enabled
 # TODO: Remove the debug and use the one from utils package
@@ -49,6 +50,10 @@ def compute_route(start, end, waypoints, preferences, user_days=None):
     # Calculate the number of days needed based on distance
     min_num_days_needed = total_distance // (distance_per_day_km * 1000) + 1
     debug_log(f"Minimum Number of days needed: {min_num_days_needed}")
+    # Generate the google directions 
+    generate_google_maps(start, end, ordered_waypoints)
+    debug_log(f"Google Maps URL generated for the route: https://www.google.com/maps/dir/?api=1&origin={start}&destination={end}&waypoints={'%7C'.join(ordered_waypoints)}")
+    
     grouped_routes = []
     num_days = 0
     num_days = 0

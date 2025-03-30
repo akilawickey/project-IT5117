@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import messagebox, scrolledtext
 from app.route_engine import compute_route
 from app.map_visualizer import open_map
-# from app.map_visualizer import view_on_google_maps
+from app.map_visualizer import view_on_google_maps
 from app.utils import validate_location
 
 class TravelPlannerApp:
@@ -67,7 +67,7 @@ class TravelPlannerApp:
         self.map_button = tk.Button(button_frame, text="Open Map View", command=open_map, font=self.custom_font)
         self.map_button.grid(row=0, column=2, padx=5)
 
-        self.google_button = tk.Button(button_frame, text="Open in Google Maps", command=self.view_on_google_maps, font=self.custom_font)
+        self.google_button = tk.Button(button_frame, text="Open in Google Maps", command=view_on_google_maps, font=self.custom_font)
         self.google_button.grid(row=0, column=3, padx=5)
 
         # Output Section
@@ -140,27 +140,27 @@ class TravelPlannerApp:
         with open("itinerary_export.txt", "w", encoding="utf-8") as f:
             f.write(summary)
 
-    def view_on_google_maps(self):
-        import webbrowser
-        if not hasattr(self, "last_route") or not self.last_route:
-            print("No route to show. Please compute itinerary first.")
-            return
-        lines = self.last_route.split("\n")
-        route_points = []
-        for line in lines:
-            if line.startswith("- "):
-                point = line[2:].strip()
-                if " (Hotel)" in point:
-                    point = point.replace(" (Hotel)", "")
-                if "No nearby hotel" not in point:
-                    route_points.append(point.replace(" ", "+"))
-        if len(route_points) < 2:
-            print("Not enough route points to open Google Maps.")
-            return
-        origin = route_points[0]
-        destination = route_points[-1]
-        waypoints = route_points[1:-1]
-        waypoints_param = "%7C".join(waypoints)
-        base_url = "https://www.google.com/maps/dir/?api=1"
-        url = f"{base_url}&origin={origin}&destination={destination}&waypoints={waypoints_param}"
-        webbrowser.open(url)
+    # def view_on_google_maps(self):
+    #     import webbrowser
+    #     if not hasattr(self, "last_route") or not self.last_route:
+    #         print("No route to show. Please compute itinerary first.")
+    #         return
+    #     lines = self.last_route.split("\n")
+    #     route_points = []
+    #     for line in lines:
+    #         if line.startswith("- "):
+    #             point = line[2:].strip()
+    #             if " (Hotel)" in point:
+    #                 point = point.replace(" (Hotel)", "")
+    #             if "No nearby hotel" not in point:
+    #                 route_points.append(point.replace(" ", "+"))
+    #     if len(route_points) < 2:
+    #         print("Not enough route points to open Google Maps.")
+    #         return
+    #     origin = route_points[0]
+    #     destination = route_points[-1]
+    #     waypoints = route_points[1:-1]
+    #     waypoints_param = "%7C".join(waypoints)
+    #     base_url = "https://www.google.com/maps/dir/?api=1"
+    #     url = f"{base_url}&origin={origin}&destination={destination}&waypoints={waypoints_param}"
+    #     webbrowser.open(url)
